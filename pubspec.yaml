@@ -1,0 +1,14 @@
+name: ncd
+version: 1.0.0
+description: >-
+  This is support netty codec
+  - fixed_length
+  - delimiter_based
+  - length_field_based
+  - line_based
+
+homepage: https://github.com/whiteCcinn/netty-codec-dart
+documentation: https://github.com/whiteCcinn/netty-codec-dart/docs
+
+environment:
+  sdk: ">=2.12.0"
