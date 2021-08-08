@@ -1,5 +1,5 @@
 name: ncd
-version: 0.2.2s
+version: 0.2.2
 description: >-
   This is support netty codec
   - fixed_length
