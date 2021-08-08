@@ -42,5 +42,5 @@ void main() async {
   );
 
   var data = utf8.encode('Hello');
-  fc.WriteFrame(data);
+  await fc.WriteFrame(data);
 }

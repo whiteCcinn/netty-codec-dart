@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
-
 import '../lib/src/frame.dart';
-import '../lib/src/length_field_based_frame_conn.dart';
+import '../lib/src/line_based_frame_conn.dart';
 
 void main() async {
   // bind the socket server to an address and port
@@ -18,24 +16,12 @@ void main() async {
 void handleConnection(Socket client) {
   print('Connection from'
       ' ${client.remoteAddress.address}:${client.remotePort}');
-  EncoderConfig encoderConfig = EncoderConfig(
-      lengthFieldLength: 4,
-      lengthAdjustment: 0,
-      lengthIncludesLengthFieldLength: false);
-  DecoderConfig decoderConfig = DecoderConfig(
-      lengthFieldOffset: 0,
-      lengthFieldLength: 4,
-      lengthAdjustment: 0,
-      initialBytesToStrip: 4);
-
   var onReadFrame = (List<int> data, FrameConn fc) async {
     print(utf8.decode(data));
     await fc.WriteFrame(utf8.encode('Hello too'));
   };
 
-  LengthFieldBasedFrameConn(
-    encoderConfig: encoderConfig,
-    decoderConfig: decoderConfig,
+  LineBasedFrameConn(
     onReadFrame: onReadFrame,
     onError: (error) {
       print(error);

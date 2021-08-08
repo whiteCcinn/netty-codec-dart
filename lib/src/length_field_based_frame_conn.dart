@@ -48,8 +48,6 @@ class LengthFieldBasedFrameConn implements FrameConn {
   EncoderConfig encoderConfig;
   DecoderConfig decoderConfig;
 
-  /// if SocketClient, the socket must be set
-  /// if SocketServer, the socket can not be set
   Socket socket;
 
   int bytesRead = 0;
@@ -62,10 +60,17 @@ class LengthFieldBasedFrameConn implements FrameConn {
       required onReadFrame,
       required onError,
       required onDone}) {
-    socket.listen((List<int> list) {
-      List<int> data = ReadFrame(list);
-      if (onReadFrame != null) {
-        onReadFrame(data, this);
+    socket.listen((List<int> list) async {
+      /// Stick the TCP package
+      while (true) {
+        List<int> data = ReadFrame(list);
+        if (data.isEmpty) {
+          return;
+        }
+        if (onReadFrame != null) {
+          await onReadFrame(data, this);
+        }
+        list = List.empty();
       }
     }, onDone: onDone, onError: onError);
   }
@@ -73,6 +78,10 @@ class LengthFieldBasedFrameConn implements FrameConn {
   @override
   List<int> ReadFrame(List<int> list) {
     readBuffer.addAll(list);
+
+    if (readBuffer.length ==0) {
+      return List.empty();
+    }
 
     Iterable<int> header = Iterable.empty();
 
