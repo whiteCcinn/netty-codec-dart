@@ -54,7 +54,6 @@ class LengthFieldBasedFrameConn implements FrameConn {
 
   int bytesRead = 0;
   static List<int> readBuffer = List.filled(0, 0, growable: true);
-  static Queue<List<int>>? dataList;
 
   LengthFieldBasedFrameConn(
       {required this.encoderConfig,
