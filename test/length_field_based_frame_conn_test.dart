@@ -10,10 +10,10 @@ void main() async {
   var socket;
   await Socket.connect(serverUrl, serverPort, timeout: Duration(seconds: 2))
       .then((s) {
-    print("连接成功");
+    // print("connected");
     socket = s;
   }).onError((error, stackTrace) {
-    print("连接失败");
+    // print("connect failed");
     print(error);
     print(stackTrace);
   });
