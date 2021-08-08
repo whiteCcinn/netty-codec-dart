@@ -5,7 +5,7 @@
 /// FrameConn is a conn that can send and receive framed data.
 abstract class FrameConn {
   // Reads a "frame" from the connection.
-  void ReadFrame(List<int> list);
+  List<int> ReadFrame(List<int> data);
 
   // Writes a "frame" to the connection.
   Future WriteFrame(List<int> byte);

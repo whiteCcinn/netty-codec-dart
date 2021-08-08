@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io';
 
 import 'dart:typed_data';
@@ -16,8 +17,10 @@ class EncoderConfig {
   /// // LengthIncludesLengthFieldLength is true, the length of the prepended length field is added to the value of the prepended length field
   bool lengthIncludesLengthFieldLength;
 
-  EncoderConfig(this.lengthFieldLength, this.lengthAdjustment,
-      this.lengthIncludesLengthFieldLength);
+  EncoderConfig(
+      {required this.lengthFieldLength,
+      required this.lengthAdjustment,
+      required this.lengthIncludesLengthFieldLength});
 }
 
 /// DecoderConfig config for decoder.
@@ -34,41 +37,131 @@ class DecoderConfig {
   /// InitialBytesToStrip is the number of first bytes to strip out from the decoded frame
   int initialBytesToStrip;
 
-  DecoderConfig(this.lengthFieldOffset, this.lengthFieldLength,
-      this.lengthAdjustment, this.initialBytesToStrip);
+  DecoderConfig(
+      {required this.lengthFieldOffset,
+      required this.lengthFieldLength,
+      required this.lengthAdjustment,
+      required this.initialBytesToStrip});
 }
 
 class LengthFieldBasedFrameConn implements FrameConn {
   EncoderConfig encoderConfig;
   DecoderConfig decoderConfig;
+
+  /// if SocketClient, the socket must be set
+  /// if SocketServer, the socket can not be set
   Socket socket;
 
+  int bytesRead = 0;
   static List<int> readBuffer = List.filled(0, 0, growable: true);
+  static Queue<List<int>>? dataList;
 
   LengthFieldBasedFrameConn(
-      this.encoderConfig, this.decoderConfig, this.socket) {
-    socket.listen(ReadFrame);
+      {required this.encoderConfig,
+      required this.decoderConfig,
+      required this.socket,
+      required onReadFrame,
+      required onError,
+      required onDone}) {
+    socket.listen((List<int> list) {
+      List<int> data = ReadFrame(list);
+      if (onReadFrame != null) {
+        onReadFrame(data, this);
+      }
+    }, onDone: onDone, onError: onError);
   }
 
   @override
-  void ReadFrame(List<int> list) {
+  List<int> ReadFrame(List<int> list) {
     readBuffer.addAll(list);
+
+    Iterable<int> header = Iterable.empty();
 
     /// discard header(offset)s
     if (decoderConfig.lengthFieldOffset > 0) {
-      Iterable<int> header =
-          readBuffer.getRange(0, decoderConfig.lengthFieldOffset);
+      header = readBuffer.getRange(bytesRead, decoderConfig.lengthFieldOffset);
+      bytesRead += decoderConfig.lengthFieldOffset;
     }
+
+    Map<String, dynamic> m = getUnadjustedFrameLength();
+    Iterable<int> lenBuf = m['lenBuf'];
+    int frameLength = m['n'];
+
+    /// real message length
+    var msgLength = frameLength + decoderConfig.lengthAdjustment;
+    var msg = readBuffer.getRange(bytesRead, bytesRead + msgLength);
+    bytesRead += msgLength;
+
+    var fullMessage = List.filled(header.length + lenBuf.length + msg.length, 0,
+        growable: false);
+    List.copyRange(fullMessage, fullMessage.length, List.from(header));
+    List.copyRange(fullMessage, header.length, List.from(lenBuf));
+    List.copyRange(fullMessage, header.length + lenBuf.length, List.from(msg));
+
+    List<int> data = List.from(fullMessage.getRange(
+        decoderConfig.initialBytesToStrip, fullMessage.length));
+
+    readBuffer.removeRange(0, bytesRead);
+    bytesRead = 0;
+
+    return data;
   }
 
   Map<String, dynamic> getUnadjustedFrameLength() {
-    var m = Map();
+    var m = Map<String, dynamic>();
     switch (encoderConfig.lengthFieldLength) {
       case 1:
         {
-            m['lenBuf'] =
+          int byte = 1;
+          var lenBuf = readBuffer.getRange(bytesRead, bytesRead + byte);
+          m['lenBuf'] = lenBuf;
+          bytesRead += byte;
+          var b = ByteData.sublistView(Uint8List.fromList(lenBuf.toList()));
+          m['n'] = b.getUint8(0);
         }
         break;
+      case 2:
+        {
+          int byte = 2;
+          var lenBuf = readBuffer.getRange(bytesRead, bytesRead + byte);
+          m['lenBuf'] = lenBuf;
+          bytesRead += byte;
+          var b = ByteData.sublistView(Uint8List.fromList(lenBuf.toList()));
+          m['n'] = b.getUint16(0, Endian.big);
+        }
+        break;
+      case 3:
+        {
+          int byte = 3;
+          var lenBuf = readBuffer.getRange(bytesRead, bytesRead + byte);
+          m['lenBuf'] = lenBuf;
+          bytesRead += byte;
+          var b = ByteData.sublistView(Uint8List.fromList(lenBuf.toList()));
+          m['n'] = ReadByteData24(Endian.big, b);
+        }
+        break;
+      case 4:
+        {
+          int byte = 4;
+          var lenBuf = readBuffer.getRange(bytesRead, bytesRead + byte);
+          m['lenBuf'] = lenBuf;
+          bytesRead += byte;
+          var b = ByteData.sublistView(Uint8List.fromList(lenBuf.toList()));
+          m['n'] = b.getUint32(0);
+        }
+        break;
+      case 8:
+        {
+          int byte = 8;
+          var lenBuf = readBuffer.getRange(bytesRead, bytesRead + byte);
+          m['lenBuf'] = lenBuf;
+          bytesRead += byte;
+          var b = ByteData.sublistView(Uint8List.fromList(lenBuf.toList()));
+          m['n'] = b.getUint64(0);
+        }
+        break;
+      default:
+        throw Exception('unSupport length');
     }
 
     return m;
