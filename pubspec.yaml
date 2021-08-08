@@ -8,7 +8,7 @@ description: >-
   - line_based
 
 homepage: https://github.com/whiteCcinn/netty-codec-dart
-documentation: https://github.com/whiteCcinn/netty-codec-dart/docs
+documentation: https://github.com/whiteCcinn/netty-codec-dart/blob/main/README.md
 
 environment:
   sdk: '>=2.10.0 <3.0.0'

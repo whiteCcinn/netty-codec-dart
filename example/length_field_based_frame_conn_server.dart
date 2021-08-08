@@ -1,23 +1,23 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import '../lib/src/frame.dart';
 import '../lib/src/length_field_based_frame_conn.dart';
 
 void main() async {
-  var serverUrl = '127.0.0.1';
-  var serverPort = 4567;
-  var socket;
-  await Socket.connect(serverUrl, serverPort, timeout: Duration(seconds: 2))
-      .then((s) {
-    // print("connected");
-    socket = s;
-  }).onError((error, stackTrace) {
-    // print("connect failed");
-    print(error);
-    print(stackTrace);
-  });
+  // bind the socket server to an address and port
+  final server = await ServerSocket.bind(InternetAddress.anyIPv4, 4567);
 
+  // listen for clent connections to the server
+  server.listen((Socket socket) {
+    handleConnection(socket);
+  });
+}
+
+void handleConnection(Socket client) {
+  print('Connection from'
+      ' ${client.remoteAddress.address}:${client.remotePort}');
   EncoderConfig encoderConfig = EncoderConfig(
       lengthFieldLength: 4,
       lengthAdjustment: 0,
@@ -30,17 +30,21 @@ void main() async {
 
   var onReadFrame = (List<int> data, FrameConn fc) {
     print(utf8.decode(data));
+    fc.WriteFrame(utf8.encode('Hello too'));
   };
 
-  var fc = LengthFieldBasedFrameConn(
+  LengthFieldBasedFrameConn(
     encoderConfig: encoderConfig,
     decoderConfig: decoderConfig,
-    socket: socket,
-    onDone: null,
     onReadFrame: onReadFrame,
-    onError: null,
+    onError: (error) {
+      print(error);
+      client.close();
+    },
+    onDone: () {
+      print('Client left');
+      client.close();
+    },
+    socket: client,
   );
-
-  var data = utf8.encode('Hello');
-  fc.WriteFrame(data);
 }

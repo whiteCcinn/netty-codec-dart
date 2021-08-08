@@ -22,7 +22,7 @@ int ReadByteData24(Endian byteOrder, ByteData b) {
         b.buffer.asUint8List()[2] << 16;
   } else {
     return b.buffer.asUint8List()[2] |
-    b.buffer.asUint8List()[1] << 8 |
-    b.buffer.asUint8List()[0] << 16;
+        b.buffer.asUint8List()[1] << 8 |
+        b.buffer.asUint8List()[0] << 16;
   }
 }
