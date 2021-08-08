@@ -33,7 +33,7 @@ class FixedLengthBasedFrameConn implements FrameConn {
   List<int> ReadFrame(List<int> list) {
     readBuffer.addAll(list);
 
-    if (readBuffer.length ==0) {
+    if (readBuffer.length == 0) {
       return List.empty();
     }
 

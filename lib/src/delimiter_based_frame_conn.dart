@@ -8,12 +8,12 @@ class DelimiterBasedFrameConn implements FrameConn {
 
   static List<int> readBuffer = List.filled(0, 0, growable: true);
 
-  DelimiterBasedFrameConn({
-    required this.socket,
-    required this.delimiter,
-    required onReadFrame,
-    required onError,
-    required onDone}) {
+  DelimiterBasedFrameConn(
+      {required this.socket,
+      required this.delimiter,
+      required onReadFrame,
+      required onError,
+      required onDone}) {
     socket.listen((List<int> list) async {
       /// Stick the TCP package
       while (true) {

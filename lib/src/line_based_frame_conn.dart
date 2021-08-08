@@ -8,10 +8,11 @@ class LineBasedFrameConn implements FrameConn {
 
   static List<int> readBuffer = List.filled(0, 0, growable: true);
 
-  LineBasedFrameConn({required this.socket,
-    required onReadFrame,
-    required onError,
-    required onDone}) {
+  LineBasedFrameConn(
+      {required this.socket,
+      required onReadFrame,
+      required onError,
+      required onDone}) {
     socket.listen((List<int> list) async {
       /// Stick the TCP package
       while (true) {
