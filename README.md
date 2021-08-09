@@ -1,4 +1,8 @@
 # netty-codec-dart
+
+- [pub.dev](https://pub.dev/packages/ncd)
+- [github](https://github.com/whiteCcinn/netty-codec-dart)
+
 Imp netty codec
 
 - fixed_length
@@ -6,20 +10,10 @@ Imp netty codec
 - length_field_based
 - line_based
 
-## length_field_based
+## Branch
 
-### Server
-```dart
-dart --enable-asserts test/length_field_based_frame_conn_server_test.dart
-Connection from 127.0.0.1:65257
-Hello
-```
-
-### Client
-```dart
-dart --enable-asserts test/length_field_based_frame_conn_test.dart
-Hello too
-```
+- main => null-satefy => v0.3.x
+- null-non-satefy => v0.2.x
 
 ### concrete FrameConn implementations
 
