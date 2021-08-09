@@ -1,5 +1,5 @@
 name: ncd
-version: 0.2.3
+version: 0.2.9
 description: >-
   This is support netty codec
   - fixed_length
@@ -11,4 +11,4 @@ homepage: https://github.com/whiteCcinn/netty-codec-dart
 documentation: https://github.com/whiteCcinn/netty-codec-dart/blob/main/README.md
 
 environment:
-  sdk: '>=2.10.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
