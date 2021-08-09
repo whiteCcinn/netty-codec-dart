@@ -1,7 +1,6 @@
 name: ncd
-version: 0.2.10
+version: 0.2.12
 description: >-
-  (null-non-safety)
   This is support netty codec
   - fixed_length
   - delimiter_based

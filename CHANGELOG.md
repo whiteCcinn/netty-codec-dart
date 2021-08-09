@@ -5,3 +5,7 @@
 ## 0.2.10
 
 * Support `null-non-safety`
+
+## 0.2.12
+
+* Support `null-non-safety`
