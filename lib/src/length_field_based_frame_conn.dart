@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:io';
 
 import 'dart:typed_data';
@@ -18,9 +17,9 @@ class EncoderConfig {
   bool lengthIncludesLengthFieldLength;
 
   EncoderConfig(
-      {required this.lengthFieldLength,
-      required this.lengthAdjustment,
-      required this.lengthIncludesLengthFieldLength});
+      {this.lengthFieldLength = 0,
+      this.lengthAdjustment = 0,
+      this.lengthIncludesLengthFieldLength = false});
 }
 
 /// DecoderConfig config for decoder.
@@ -38,29 +37,29 @@ class DecoderConfig {
   int initialBytesToStrip;
 
   DecoderConfig(
-      {required this.lengthFieldOffset,
-      required this.lengthFieldLength,
-      required this.lengthAdjustment,
-      required this.initialBytesToStrip});
+      {this.lengthFieldOffset = 0,
+      this.lengthFieldLength = 0,
+      this.lengthAdjustment = 0,
+      this.initialBytesToStrip = 0});
 }
 
 class LengthFieldBasedFrameConn implements FrameConn {
-  EncoderConfig encoderConfig;
-  DecoderConfig decoderConfig;
+  EncoderConfig? encoderConfig;
+  DecoderConfig? decoderConfig;
 
-  Socket socket;
+  Socket? socket;
 
   int bytesRead = 0;
   static List<int> readBuffer = List.filled(0, 0, growable: true);
 
   LengthFieldBasedFrameConn(
-      {required this.encoderConfig,
-      required this.decoderConfig,
-      required this.socket,
-      required onReadFrame,
-      required onError,
-      required onDone}) {
-    socket.listen((List<int> list) async {
+      { this.encoderConfig,
+       this.decoderConfig,
+       this.socket,
+       onReadFrame,
+       onError,
+       onDone}) {
+    socket!.listen((List<int> list) async {
       /// Stick the TCP package
       while (true) {
         List<int> data = ReadFrame(list);
@@ -86,9 +85,9 @@ class LengthFieldBasedFrameConn implements FrameConn {
     Iterable<int> header = Iterable.empty();
 
     /// discard header(offset)s
-    if (decoderConfig.lengthFieldOffset > 0) {
-      header = readBuffer.getRange(bytesRead, decoderConfig.lengthFieldOffset);
-      bytesRead += decoderConfig.lengthFieldOffset;
+    if (decoderConfig!.lengthFieldOffset > 0) {
+      header = readBuffer.getRange(bytesRead, decoderConfig!.lengthFieldOffset);
+      bytesRead += decoderConfig!.lengthFieldOffset;
     }
 
     Map<String, dynamic> m = getUnadjustedFrameLength();
@@ -96,7 +95,7 @@ class LengthFieldBasedFrameConn implements FrameConn {
     int frameLength = m['n'];
 
     /// real message length
-    var msgLength = frameLength + decoderConfig.lengthAdjustment;
+    var msgLength = frameLength + decoderConfig!.lengthAdjustment;
     var msg = readBuffer.getRange(bytesRead, bytesRead + msgLength);
     bytesRead += msgLength;
 
@@ -107,7 +106,7 @@ class LengthFieldBasedFrameConn implements FrameConn {
     List.copyRange(fullMessage, header.length + lenBuf.length, List.from(msg));
 
     List<int> data = List.from(fullMessage.getRange(
-        decoderConfig.initialBytesToStrip, fullMessage.length));
+        decoderConfig!.initialBytesToStrip, fullMessage.length));
 
     readBuffer.removeRange(0, bytesRead);
     bytesRead = 0;
@@ -117,7 +116,7 @@ class LengthFieldBasedFrameConn implements FrameConn {
 
   Map<String, dynamic> getUnadjustedFrameLength() {
     var m = Map<String, dynamic>();
-    switch (encoderConfig.lengthFieldLength) {
+    switch (encoderConfig!.lengthFieldLength) {
       case 1:
         {
           int byte = 1;
@@ -177,16 +176,16 @@ class LengthFieldBasedFrameConn implements FrameConn {
 
   @override
   Future WriteFrame(List<int> byte) async {
-    var length = byte.length + encoderConfig.lengthAdjustment;
-    if (encoderConfig.lengthIncludesLengthFieldLength) {
-      length += encoderConfig.lengthFieldLength;
+    var length = byte.length + encoderConfig!.lengthAdjustment;
+    if (encoderConfig!.lengthIncludesLengthFieldLength) {
+      length += encoderConfig!.lengthFieldLength;
     }
 
     if (length < 0) {
       throw Exception('length < 0');
     }
 
-    switch (encoderConfig.lengthFieldLength) {
+    switch (encoderConfig!.lengthFieldLength) {
       case 1:
         {
           if (length >= 256) {
@@ -194,7 +193,7 @@ class LengthFieldBasedFrameConn implements FrameConn {
           }
           var b = new ByteData(1);
           b.setUint8(0, length);
-          socket.add(b.buffer.asUint8List());
+          socket!.add(b.buffer.asUint8List());
         }
         break;
       case 2:
@@ -205,7 +204,7 @@ class LengthFieldBasedFrameConn implements FrameConn {
           }
           var b = new ByteData(2);
           b.setUint16(0, length);
-          socket.add(b.buffer.asUint8List());
+          socket!.add(b.buffer.asUint8List());
         }
         break;
       case 3:
@@ -215,33 +214,33 @@ class LengthFieldBasedFrameConn implements FrameConn {
                 'length does not fit into a medium integer: ', length);
           }
           var b = NewByteData24(Endian.big, length);
-          socket.add(b.buffer.asUint8List());
+          socket!.add(b.buffer.asUint8List());
         }
         break;
       case 4:
         {
           var b = new ByteData(4);
           b.setUint32(0, length);
-          socket.add(b.buffer.asUint8List());
+          socket!.add(b.buffer.asUint8List());
         }
         break;
       case 8:
         {
           var b = new ByteData(8);
           b.setUint64(0, length);
-          socket.add(b.buffer.asUint8List());
+          socket!.add(b.buffer.asUint8List());
         }
         break;
       default:
         throw Exception('UnSupportLength');
     }
 
-    socket.add(byte);
-    await socket.flush();
+    socket!.add(byte);
+    await socket!.flush();
   }
 
   @override
   Future Close() async {
-    await socket.close();
+    await socket!.close();
   }
 }

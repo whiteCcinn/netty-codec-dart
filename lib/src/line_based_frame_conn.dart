@@ -4,16 +4,12 @@ import 'frame.dart';
 class LineBasedFrameConn implements FrameConn {
   static const String flag = "\n";
 
-  Socket socket;
+  Socket? socket;
 
   static List<int> readBuffer = List.filled(0, 0, growable: true);
 
-  LineBasedFrameConn(
-      {required this.socket,
-      required onReadFrame,
-      required onError,
-      required onDone}) {
-    socket.listen((List<int> list) async {
+  LineBasedFrameConn({this.socket, onReadFrame, onError, onDone}) {
+    socket!.listen((List<int> list) async {
       /// Stick the TCP package
       while (true) {
         List<int> data = ReadFrame(list);
@@ -47,12 +43,12 @@ class LineBasedFrameConn implements FrameConn {
   Future WriteFrame(List<int> byte) async {
     List<int> newByte = List.from(byte, growable: true);
     newByte.add(LineBasedFrameConn.flag.codeUnitAt(0));
-    socket.add(newByte);
-    await socket.flush();
+    socket!.add(newByte);
+    await socket!.flush();
   }
 
   @override
   Future Close() async {
-    await socket.close();
+    await socket!.close();
   }
 }

@@ -4,17 +4,17 @@ import 'frame.dart';
 class FixedLengthBasedFrameConn implements FrameConn {
   int frameLength;
 
-  Socket socket;
+  Socket? socket;
 
   static List<int> readBuffer = List.filled(0, 0, growable: true);
 
   FixedLengthBasedFrameConn(
-      {required this.socket,
-      required this.frameLength,
-      required onReadFrame,
-      required onError,
-      required onDone}) {
-    socket.listen((List<int> list) async {
+      { this.socket,
+       this.frameLength = 0,
+       onReadFrame,
+       onError,
+       onDone}) {
+    socket!.listen((List<int> list) async {
       /// Stick the TCP package
       while (true) {
         List<int> data = ReadFrame(list);
@@ -50,12 +50,12 @@ class FixedLengthBasedFrameConn implements FrameConn {
       throw Exception('UnexpectedFixedLength');
     }
     List<int> newByte = List.from(byte, growable: true);
-    socket.add(newByte);
-    await socket.flush();
+    socket!.add(newByte);
+    await socket!.flush();
   }
 
   @override
   Future Close() async {
-    await socket.close();
+    await socket!.close();
   }
 }

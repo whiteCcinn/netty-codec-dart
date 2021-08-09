@@ -4,17 +4,17 @@ import 'frame.dart';
 class DelimiterBasedFrameConn implements FrameConn {
   String delimiter;
 
-  Socket socket;
+  Socket? socket;
 
   static List<int> readBuffer = List.filled(0, 0, growable: true);
 
   DelimiterBasedFrameConn(
-      {required this.socket,
-      required this.delimiter,
-      required onReadFrame,
-      required onError,
-      required onDone}) {
-    socket.listen((List<int> list) async {
+      {this.socket,
+       this.delimiter = "\r\n",
+       onReadFrame,
+       onError,
+       onDone}) {
+    socket!.listen((List<int> list) async {
       /// Stick the TCP package
       while (true) {
         List<int> data = ReadFrame(list);
@@ -48,12 +48,12 @@ class DelimiterBasedFrameConn implements FrameConn {
   Future WriteFrame(List<int> byte) async {
     List<int> newByte = List.from(byte, growable: true);
     newByte.add(delimiter.codeUnitAt(0));
-    socket.add(newByte);
-    await socket.flush();
+    socket!.add(newByte);
+    await socket!.flush();
   }
 
   @override
   Future Close() async {
-    await socket.close();
+    await socket!.close();
   }
 }
