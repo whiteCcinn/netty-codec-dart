@@ -1,5 +1,5 @@
 name: ncd
-version: 0.2.4
+version: 0.2.8
 description: >-
   (null-non-safety)
   This is support netty codec
@@ -12,4 +12,4 @@ homepage: https://github.com/whiteCcinn/netty-codec-dart
 documentation: https://github.com/whiteCcinn/netty-codec-dart/blob/main/README.md
 
 environment:
-  sdk: '>=2.10.0 <3.0.0'
+  sdk: '>=2.7.0 <3.0.0'

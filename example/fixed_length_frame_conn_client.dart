@@ -23,8 +23,8 @@ void main() async {
   };
 
   var fc = FixedLengthBasedFrameConn(
+    socket,
     frameLength: 5,
-    socket: socket,
     onDone: null,
     onReadFrame: onReadFrame,
     onError: null,

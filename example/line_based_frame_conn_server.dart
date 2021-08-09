@@ -22,6 +22,7 @@ void handleConnection(Socket client) {
   };
 
   LineBasedFrameConn(
+    client,
     onReadFrame: onReadFrame,
     onError: (error) {
       print(error);
@@ -31,6 +32,5 @@ void handleConnection(Socket client) {
       print('Client left');
       client.close();
     },
-    socket: client,
   );
 }

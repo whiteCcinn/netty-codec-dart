@@ -34,8 +34,9 @@ void handleConnection(Socket client) {
   };
 
   LengthFieldBasedFrameConn(
-    encoderConfig: encoderConfig,
-    decoderConfig: decoderConfig,
+    encoderConfig,
+    decoderConfig,
+    client,
     onReadFrame: onReadFrame,
     onError: (error) {
       print(error);
@@ -45,6 +46,5 @@ void handleConnection(Socket client) {
       print('Client left');
       client.close();
     },
-    socket: client,
   );
 }

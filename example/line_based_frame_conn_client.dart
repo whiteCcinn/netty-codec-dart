@@ -23,7 +23,7 @@ void main() async {
   };
 
   var fc = LineBasedFrameConn(
-    socket: socket,
+    socket,
     onDone: null,
     onReadFrame: onReadFrame,
     onError: null,

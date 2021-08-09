@@ -33,18 +33,12 @@ void handleConnection(Socket client) {
     await fc.WriteFrame(utf8.encode('Hello too'));
   };
 
-  LengthFieldBasedFrameConn(
-    encoderConfig: encoderConfig,
-    decoderConfig: decoderConfig,
-    onReadFrame: onReadFrame,
-    onError: (error) {
-      print(error);
-      client.close();
-    },
-    onDone: () {
-      print('Client left');
-      client.close();
-    },
-    socket: client,
-  );
+  LengthFieldBasedFrameConn(encoderConfig, decoderConfig, client,
+      onReadFrame: onReadFrame, onError: (error) {
+    print(error);
+    client.close();
+  }, onDone: () {
+    print('Client left');
+    client.close();
+  });
 }

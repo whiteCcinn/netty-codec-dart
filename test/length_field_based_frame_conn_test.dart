@@ -33,9 +33,9 @@ void main() async {
   };
 
   var fc = LengthFieldBasedFrameConn(
-    encoderConfig: encoderConfig,
-    decoderConfig: decoderConfig,
-    socket: socket,
+    encoderConfig,
+    decoderConfig,
+    socket,
     onDone: null,
     onReadFrame: onReadFrame,
     onError: null,

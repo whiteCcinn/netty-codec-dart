@@ -22,6 +22,7 @@ void handleConnection(Socket client) {
   };
 
   FixedLengthBasedFrameConn(
+    client,
     frameLength: 5,
     onReadFrame: onReadFrame,
     onError: (error) {
@@ -32,6 +33,5 @@ void handleConnection(Socket client) {
       print('Client left');
       client.close();
     },
-    socket: client,
   );
 }

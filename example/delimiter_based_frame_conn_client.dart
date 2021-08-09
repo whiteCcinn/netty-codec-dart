@@ -23,8 +23,8 @@ void main() async {
   };
 
   var fc = DelimiterBasedFrameConn(
+    socket,
     delimiter: "\r\n",
-    socket: socket,
     onDone: null,
     onReadFrame: onReadFrame,
     onError: null,
